@@ -1,0 +1,270 @@
+---
+title: "Parser HMDB"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("XML")
+library("xml2")
+library( "magrittr" )  #for pipe operator %>%
+library("pbapply") # to track on progress  
+
+# The function recieve an xml file (its location) and return a list of nodes
+Parser_HMDB <- function(xml.file_location){
+  start.time<- Sys.time()
+  # Read as xml file
+  doc <- read_xml( xml.file_location )
+  #get metabolite nodes (only first three used in this sample)
+  
+  met.nodes <- xml_find_all( doc, ".//d1:metabolite" )   [1:10]
+  #list of data.frame
+  xpath_child.v <- c( "./d1:accession",
+                      "./d1:name"  ,
+                      "./d1:description",
+                      "./d1:synonyms/d1:synonym"  ,
+                      "./d1:chemical_formula"   ,
+                      "./d1:smiles" ,
+                      "./d1:inchikey"   ,
+                      "./d1:biological_properties/d1:pathways/d1:pathway/d1:name"   ,
+                      "./d1:diseases/d1:disease/d1:name"   ,
+                      "./d1:diseases/d1:disease/d1:references",
+                      
+                      "./d1:kegg_id"   ,                
+                      "./d1:meta_cyc_id"
+  )
+  
+  child.names.v <- c( "accession",
+                      "name" ,  
+                      "description" ,
+                      "synonyms"  ,
+                      "chemical_formula" , 
+                      "smiles" ,
+                      "inchikey", 
+                      "pathways_names" ,
+                      "diseases_name",
+                      "references",
+                      
+                      "kegg_id" , 
+                      "meta_cyc_id"
+  ) 
+  #first, loop over the met.nodes
+  L.sec_acc <- pblapply( met.nodes, function(x) { # pblapply to track progress or lapply
+    #second, loop over the xpath desired child-nodes
+    temp <- lapply( xpath_child.v, function(y) { 
+      xml_find_all(x, y ) %>% xml_text(trim = T) %>% data.frame( value = .)
+    })
+    #set their names
+    names(temp) = child.names.v
+    return(temp)
+  }) 
+  end.time<- Sys.time()
+  total.time<- end.time-start.time
+  print(total.time)
+  return(L.sec_acc )
+}
+
+# select the location where t he xml file is 
+location= "D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/saliva_metabolites/saliva_metabolites.xml"
+
+outp<-Parser_HMDB(location)
+
+getwd()
+#setwd(D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/)
+
+# select the path to save data file 
+save(outp, file = "D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/test10saliva_metabolites_List.Rdata")
+
+#load(file = "saliva_metabolites_List.Rdata")
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("XML")
+library("xml2")
+library( "magrittr" )  #for pipe operator %>%
+library("pbapply") # to track on progress  
+
+# The function recieve an xml file (its location) and return a list of nodes
+Short_Parser_HMDB <- function(xml.file_location){
+  start.time<- Sys.time()
+  # Read as xml file
+  doc <- read_xml( xml.file_location )
+  #get metabolite nodes (only first three used in this sample)
+  
+  met.nodes <- xml_find_all( doc, ".//d1:metabolite" )   [22001:23000]   
+  #list of data.frame
+  xpath_child.v <- c( "./d1:accession",
+                      "./d1:name"  ,
+                      #"./d1:description",
+                      #"./d1:synonyms/d1:synonym"  ,
+                      #"./d1:chemical_formula"   ,
+                      #"./d1:smiles" ,
+                      "./d1:inchikey"   #,
+                      #"./d1:biological_properties/d1:pathways/d1:pathway/d1:name"   ,
+                      #"./d1:diseases/d1:disease/d1:name"   ,
+                      #"./d1:diseases/d1:disease/d1:references",
+                      
+                      #"./d1:kegg_id"   ,                
+                      #"./d1:meta_cyc_id"
+  )
+  
+  child.names.v <- c( "accession",
+                      "name" ,  
+                      #"description" ,
+                      #"synonyms"  ,
+                      #"chemical_formula" , 
+                      #"smiles" ,
+                      "inchikey" #, 
+                      #"pathways_names" ,
+                      #"diseases_name",
+                      #"references",
+                      
+                      #"kegg_id" , 
+                      #"meta_cyc_id"
+  ) 
+  #first, loop over the met.nodes
+  L.sec_acc <- pblapply( met.nodes, function(x) {   # pblapply to track progress or lapply but slows down dramticlly the function 
+    #second, loop over the xpath desired child-nodes
+    temp <- lapply( xpath_child.v, function(y) { 
+      xml_find_all(x, y ) %>% xml_text(trim = T) %>% data.frame( value = .)
+    })
+    #set their names
+    names(temp) = child.names.v
+    return(temp)
+  }) 
+  end.time<- Sys.time()
+  total.time<- end.time-start.time
+  print(total.time)
+  return(L.sec_acc )
+}
+
+# select the location where t he xml file is 
+#location= "D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/saliva_metabolites/saliva_metabolites.xml"
+location= "D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/serum_metabolites/serum_metabolites.xml"
+
+Short_outp<-Short_Parser_HMDB(location)
+
+getwd()
+#setwd(D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/)
+
+# select the path to save data file 
+save(Short_outp, file = "D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/Short_serum_metabolites_List.Rdata")
+
+#load(file = "D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/Short_saliva_metabolites_List.Rdata")
+
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("XML")
+library("xml2")
+library( "magrittr" )  #for pipe operator %>%
+library("pbapply") # to track on progress  
+
+# The function recieve an xml file (its location) and return a list of nodes
+for (i in 0:25) {
+Short_Parser_HMDB <- function(xml.file_location){
+  start.time<- Sys.time()
+  # Read as xml file
+  doc <- read_xml( xml.file_location )
+  #get metabolite nodes (only first three used in this sample)
+  
+  met.nodes <- xml_find_all( doc, ".//d1:metabolite" )   [(i*1000+1):(1000*i+1000)]   
+  #list of data.frame
+  xpath_child.v <- c( "./d1:accession",
+                      "./d1:name"  ,
+                      #"./d1:description",
+                      #"./d1:synonyms/d1:synonym"  ,
+                      #"./d1:chemical_formula"   ,
+                      #"./d1:smiles" ,
+                      "./d1:inchikey"   #,
+                      #"./d1:biological_properties/d1:pathways/d1:pathway/d1:name"   ,
+                      #"./d1:diseases/d1:disease/d1:name"   ,
+                      #"./d1:diseases/d1:disease/d1:references",
+                      
+                      #"./d1:kegg_id"   ,                
+                      #"./d1:meta_cyc_id"
+  )
+  
+  child.names.v <- c( "accession",
+                      "name" ,  
+                      #"description" ,
+                      #"synonyms"  ,
+                      #"chemical_formula" , 
+                      #"smiles" ,
+                      "inchikey" #, 
+                      #"pathways_names" ,
+                      #"diseases_name",
+                      #"references",
+                      
+                      #"kegg_id" , 
+                      #"meta_cyc_id"
+  ) 
+  #first, loop over the met.nodes
+  L.sec_acc <- pblapply( met.nodes, function(x) {   # pblapply to track progress or lapply but slows down dramticlly the function 
+    #second, loop over the xpath desired child-nodes
+    temp <- lapply( xpath_child.v, function(y) { 
+      xml_find_all(x, y ) %>% xml_text(trim = T) %>% data.frame( value = .)
+    })
+    #set their names
+    names(temp) = child.names.v
+    return(temp)
+  }) 
+  end.time<- Sys.time()
+  total.time<- end.time-start.time
+  print(total.time)
+  return(L.sec_acc )
+  
+  
+}
+
+# select the location where t he xml file is 
+#location= "D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/saliva_metabolites/saliva_metabolites.xml"
+
+#location= "D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/serum_metabolites/serum_metabolites.xml"
+
+Short_outp<-Short_Parser_HMDB(location)
+
+# getwd()
+# setwd(D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/)
+
+# select the path to save data file 
+save(Short_outp, 
+     file = paste0("D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/","metabolite_",
+                   (i*1000+1),
+                   "_",
+                   (1000*i+1000),
+                   "_Short_serum_metabolites_List.Rdata")
+                    )
+}
+
+#
+load(file = "D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/Short_saliva_metabolites_List.Rdata")
+
+load(file = "D:/BCDD/Documents/Tal/Projects/HMDB/Rdata/metabolite_1_10_Short_serum_metabolites_List.Rdata")
+#metabolite_1_10_Short_serum_metabolites_List
+
+```
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
