@@ -168,7 +168,7 @@ library( "magrittr" )  #for pipe operator %>%
 library("pbapply") # to track on progress  
 
 # The function recieve an xml file (its location) and return a list of nodes
-for (i in 0:25) {
+for (i in 17:25) {
 Short_Parser_HMDB <- function(xml.file_location){
   start.time<- Sys.time()
   # Read as xml file
