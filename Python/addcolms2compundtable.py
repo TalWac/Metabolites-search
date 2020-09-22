@@ -1,6 +1,7 @@
 import pandas as pd
 import pubchempy as pcp
 import time
+import numpy as np
 r'D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/Compounds_export_test.xlsx'
 # CD = pd.read_excel(r'D:/BCDD/Documents/Tal/Projects/HMDB/DataSets/Compounds_export_test.xlsx')
 
@@ -30,9 +31,9 @@ def addinchikey(excelpathin, excelpathout):
 
         if pd.isnull(sdf):
             # print(idx)
-            newlistinchikey.append('Nan')
-            newlistsource_id.append('Nan')
-            newlistsource_name.append('Nan')
+            newlistinchikey.append(np.nan)
+            newlistsource_id.append(np.nan)
+            newlistsource_name.append(np.nan)
         else:
             comp = pcp.get_compounds(sdf, 'sdf')
             substance = pcp.get_substances(comp[0].cid, 'sid')
